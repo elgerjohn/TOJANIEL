@@ -76,19 +76,6 @@
       display: block;
     }
 
-    .placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 24px;
-      text-align: center;
-      padding: 20px;
-    }
-
     .overlay {
       position: absolute;
       left: 0;
@@ -205,10 +192,9 @@
       box-shadow: 0 4px 12px rgba(255, 111, 163, 0.4);
     }
 
-    .error-msg {
-      font-size: 12px;
+    .loading {
+      font-size: 14px;
       color: #999;
-      margin-top: 8px;
     }
   </style>
 </head>
@@ -217,71 +203,48 @@
     <h1 style="color:#ff6fa3;">Happy Birthday Janiel/Jiel! 🎂</h1>
     <p style="color:#666; max-width:300px;">Click the button below to start the slideshow with music</p>
     <button class="start-btn" id="startBtn">Start Slideshow 🎵</button>
+    <p class="loading" id="loading"></p>
   </div>
 
   <div class="card" id="mainContent" style="display:none">
     <div class="slideshow" id="slideshow">
       <div class="slide show">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">🎂</div>
-          <div>Photo 1</div>
-          <div class="error-msg">1.png</div>
-        </div>
+        <img id="img1" alt="Janiel Photo 1">
         <div class="overlay">
           <h2 class="title">Happy Birthday to the most gorgeous girl I've ever known 🎉</h2>
           <p class="subtitle">Wishing you all the joy in the world.</p>
         </div>
       </div>
       <div class="slide">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">💋</div>
-          <div>Photo 2</div>
-          <div class="error-msg">2.png</div>
-        </div>
+        <img id="img2" alt="Janiel Photo 2">
         <div class="overlay">
           <h2 class="title">Your lips look kissable, just kidding 😅</h2>
           <p class="subtitle">Hope your day sparkles like you do ✨</p>
         </div>
       </div>
       <div class="slide">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">😊</div>
-          <div>Photo 3</div>
-          <div class="error-msg">3.png</div>
-        </div>
+        <img id="img3" alt="Janiel Photo 3">
         <div class="overlay">
           <h2 class="title">To the one with the brightest smile 😊</h2>
           <p class="subtitle">May your year ahead be full of adventures.</p>
         </div>
       </div>
       <div class="slide">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">✨</div>
-          <div>Photo 4</div>
-          <div class="error-msg">4.png</div>
-        </div>
+        <img id="img4" alt="Janiel Photo 4">
         <div class="overlay">
           <h2 class="title">Keep shining 🌟</h2>
           <p class="subtitle">You make every picture glow.</p>
         </div>
       </div>
       <div class="slide">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">🥰</div>
-          <div>Photo 5</div>
-          <div class="error-msg">images/pic.png</div>
-        </div>
+        <img id="img5" alt="Janiel Photo 5">
         <div class="overlay">
           <h2 class="title">Maka tunaw imong smile 🥂</h2>
           <p class="subtitle">Cutieee kaayu ka diri.</p>
         </div>
       </div>
       <div class="slide">
-        <div class="placeholder">
-          <div style="font-size: 60px; margin-bottom: 20px;">💭</div>
-          <div>Photo 6</div>
-          <div class="error-msg">6.PNG</div>
-        </div>
+        <img id="img6" alt="Janiel Photo 6">
         <div class="overlay">
           <h2 class="title">I miss everything about us 💭</h2>
           <p class="subtitle">Some memories never fade.</p>
@@ -305,6 +268,34 @@
   <div id="player" style="display:none"></div>
 
 <script>
+const imageFiles = ['1.png', '2.png', '3.png', '4.png', '5.png', '6.PNG'];
+let imagesLoaded = 0;
+
+async function loadImages() {
+  const loading = document.getElementById('loading');
+  loading.textContent = 'Loading images...';
+  
+  for (let i = 0; i < imageFiles.length; i++) {
+    try {
+      const data = await window.fs.readFile(imageFiles[i]);
+      const blob = new Blob([data], { type: 'image/png' });
+      const url = URL.createObjectURL(blob);
+      document.getElementById(`img${i + 1}`).src = url;
+      imagesLoaded++;
+      loading.textContent = `Loading images... ${imagesLoaded}/${imageFiles.length}`;
+    } catch (error) {
+      console.error(`Error loading ${imageFiles[i]}:`, error);
+      loading.textContent = `Error loading image ${i + 1}. Please make sure all images are uploaded.`;
+    }
+  }
+  
+  if (imagesLoaded === imageFiles.length) {
+    loading.textContent = 'All images loaded! Ready to start.';
+  }
+}
+
+loadImages();
+
 let player;
 let musicPlaying = false;
 let playerReady = false;
@@ -372,9 +363,13 @@ const startBtn = document.getElementById('startBtn');
 const mainContent = document.getElementById('mainContent');
 
 startBtn.addEventListener('click', function() {
-  startScreen.style.display = 'none';
-  mainContent.style.display = 'block';
-  startMusic();
+  if (imagesLoaded === imageFiles.length) {
+    startScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    startMusic();
+  } else {
+    alert('Please wait for all images to load first!');
+  }
 });
 
 const slides = Array.from(document.querySelectorAll('.slide'));
